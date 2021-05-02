@@ -188,6 +188,26 @@
         // build line demand chart
 
         // build scatter chart
+        var data = google.visualization.arrayToDataTable([
+          ['Power (kW)', 'Outdoor air Temperature (F)'],
+          [ 8,      12],
+          [ 4,      5.5],
+          [ 11,     14],
+          [ 4,      5],
+          [ 3,      3.5],
+          [ 6.5,    7]
+        ]); //Think we can change the data format of this to match the other charts.
+
+        var options = {
+          title: '',
+          hAxis: {title: 'Outdoor air Temperature (F)', minValue: 0, maxValue: 100},
+          vAxis: {title: 'Power (kW)', minValue: 0, maxValue: 500},
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.ScatterChart(document.getElementById('chart_scatter'));
+
+        chart.draw(data, options);
 
         // build calendar chart
         var calendarData = new google.visualization.DataTable();
@@ -231,8 +251,44 @@
 
         lineChart.draw(lineData, lineOptions);
 
-        //build hourly chart
+        //build bar chart
+        var data = google.visualization.arrayToDataTable([
+          ['Hour', 'Consumption'],
+          ['1', 50],
+          ['2', 50],
+          ['3', 300],
+          ['4', 500],
+          ['5', 500],
+          ['6', 300],
+          ['7', 50],
+          ['8', 50]         
+        ]);//Think we can change the data format of this to match the other charts. This should be 1 to 24 hours rather than the example 1 to 8.
 
+        var options = {
+          chart: {
+            title: 'Average consumption over 24 hours',
+            subtitle: ''
+          },
+          axes: {
+            x: {
+              0: {side: 'bottom'}
+            }
+          },
+          hAxis: {
+            title: 'Time of Day',
+            format: 'h:mm a',
+            viewWindow: {
+              min: [7, 30, 0],
+              max: [17, 30, 0]
+            }
+          },
+          vAxis: {
+            title: ''
+          }
+        };
+
+        var materialChart = new google.charts.Bar(document.getElementById('chart_div'));
+        materialChart.draw(data, options);
       }
     </script>
   </body>
