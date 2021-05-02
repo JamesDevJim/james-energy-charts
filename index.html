@@ -119,7 +119,7 @@
         var json = JSON.stringify(objArray);
         var str = json.replace(/},/g, "},\r\n");
 
-        return str;
+        return JSON.parse(str);
       }
       function handleOther(e) {
         e.preventDefault();
@@ -130,7 +130,7 @@
         let files = dt.files;
 
         const csv = await files[0].text();
-        CSV_JSON = JSON.parse(CSV2JSON(csv));
+        CSV_JSON = CSV2JSON(csv);
         loadCharts();
       }
       let dropArea = document.getElementById("drop-area");
