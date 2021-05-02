@@ -145,7 +145,7 @@
     <!-- chart javascript -->
     <script>
       function loadCharts() {
-        google.charts.load("current", { packages: ["calendar", "corechart", "line"] });
+        google.charts.load("current", { packages: ["calendar", "corechart", "line", "bar"] });
         google.charts.setOnLoadCallback(drawAllCharts);
       }
 
@@ -176,7 +176,7 @@
           scatterRows.push([temp, usage]);          
 
           // create calendar chart data
-          if (moment(previousDate, 'MM/DD/YY H:mm').isSame(moment(date, 'MM/DD/YY H:mm'), 'day')) {
+          if (moment(previousDate, 'MM/DD/YY H:mm').isSame(moment(date, 'MM/DD/YY H:mm'), 'day')) { //if same day, then sum usage
             calendarRows[calendarRows.length - 1][1] += (usage || 0);
           } else {
             previousDate = date;
@@ -201,7 +201,7 @@
             title: "Date",
           },
           vAxis: {
-            title: "Usage (kWh)",
+            title: "Peak Demand (kW)",
           },
           explorer: {
             dragToPan: {
@@ -211,32 +211,28 @@
         };
 
         var lineDemandChart = new google.visualization.LineChart(
-          document.getElementById("chart_consumption")
+          document.getElementById("chart_demand")
         );
 
         lineDemandChart.draw(lineDemandData, lineDemandOptions);
 
         // build scatter chart
-        var data = google.visualization.arrayToDataTable([
-          ['Power (kW)', 'Outdoor air Temperature (F)'],
-          [ 8,      12],
-          [ 4,      5.5],
-          [ 11,     14],
-          [ 4,      5],
-          [ 3,      3.5],
-          [ 6.5,    7]
-        ]); //Think we can change the data format of this to match the other charts.
+        var scatterData = new google.visualization.DataTable();
+        scatterData.addColumn("number", "Temp");
+        scatterData.addColumn("number", "Demand");
 
-        var options = {
+        scatterData.addRows(scatterRows);
+
+        var scatterOptions = {
           title: '',
           hAxis: {title: 'Outdoor air Temperature (F)', minValue: 0, maxValue: 100},
           vAxis: {title: 'Power (kW)', minValue: 0, maxValue: 500},
           legend: 'none'
         };
 
-        var chart = new google.visualization.ScatterChart(document.getElementById('chart_scatter'));
+        var scatterChart = new google.visualization.ScatterChart(document.getElementById('chart_scatter'));
 
-        chart.draw(data, options);
+        scatterChart.draw(scatterData, scatterOptions);
 
         // build calendar chart
         var calendarData = new google.visualization.DataTable();
@@ -258,7 +254,7 @@
         lineData.addColumn("string", "Date");
         lineData.addColumn("number", "Usage");
 
-        console.log(lineRows)
+        //console.log(lineRows)
 
         lineData.addRows(lineRows);
 
@@ -282,8 +278,8 @@
 
         lineChart.draw(lineData, lineOptions);
 
-        //build bar chart
-        var data = google.visualization.arrayToDataTable([
+        //build bar chart       
+        var barData = google.visualization.arrayToDataTable([
           ['Hour', 'Consumption'],
           ['1', 50],
           ['2', 50],
@@ -295,7 +291,7 @@
           ['8', 50]         
         ]);//Think we can change the data format of this to match the other charts. This should be 1 to 24 hours rather than the example 1 to 8.
 
-        var options = {
+        var barOptions = {
           chart: {
             title: 'Average consumption over 24 hours',
             subtitle: ''
@@ -318,8 +314,8 @@
           }
         };
 
-        var materialChart = new google.charts.Bar(document.getElementById('chart_div'));
-        materialChart.draw(data, options);
+        var barChart = new google.charts.Bar(document.getElementById('chart_hourly'));
+        barChart.draw(barData, barOptions);
       }
     </script>
   </body>
