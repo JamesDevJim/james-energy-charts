@@ -163,13 +163,14 @@
           const usage = parseInt(record["Usage"]);
           const temp = parseInt(record["Avg. Temperature"]);
           const demand = parseInt(record["Peak Demand"]);
+          
 
           // create line chart data
           console.log('push to lineRows: ', date, usage);
           lineRows.push([date, usage]);
           
           // create line demand chart data
-          lineRows.push([date, demand]);
+          lineDemandRows.push([date, demand]);
 
           // create scatter chart data
           scatterRows.push([temp, usage]);          
@@ -184,10 +185,36 @@
 
           // create bar chart data
 
-          //insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same. 
+            //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same. 
+            //TODO: Add feature - drop down to select ALL data or by month
         }
 
         // build line demand chart
+        var lineDemandData = new google.visualization.DataTable();
+        lineDemandData.addColumn("string", "Date");
+        lineDemandData.addColumn("number", "Demand");
+
+        lineDemandData.addRows(lineDemandRows);
+
+        var lineDemandOptions = {
+          hAxis: {
+            title: "Date",
+          },
+          vAxis: {
+            title: "Usage (kWh)",
+          },
+          explorer: {
+            dragToPan: {
+              axis: "horizontal",
+            },
+          },
+        };
+
+        var lineDemandChart = new google.visualization.LineChart(
+          document.getElementById("chart_consumption")
+        );
+
+        lineDemandChart.draw(lineDemandData, lineDemandOptions);
 
         // build scatter chart
         var data = google.visualization.arrayToDataTable([
@@ -240,7 +267,7 @@
             title: "Date",
           },
           vAxis: {
-            title: "Average Usage (kWh)",
+            title: "Usage (kWh)",
           },
           explorer: {
             dragToPan: {
@@ -250,7 +277,7 @@
         };
 
         var lineChart = new google.visualization.LineChart(
-          document.getElementById("chart_demand")
+          document.getElementById("chart_consumption")
         );
 
         lineChart.draw(lineData, lineOptions);
