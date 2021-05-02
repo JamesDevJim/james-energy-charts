@@ -21,16 +21,25 @@
     </style>
   </head>
   <body>
-    <p>Drag csv file:</p>
+    <p>Drag and drop utility data:</p>
 
-    <div id="drop-area"></div>
+    <div id="drop-area">Drop csv here</div>
     <br />
     <div class="container">
-      <div id="chart_demand"></div>
+      <div id="chart_consumption"></div> <!--display timeseries consumption (kWh) data-->
     </div>
     <div class="container">
-      <div id="calendar_basic"></div>
+      <div id="chart_demand"></div> <!--display timeseries demand (kW) data-->
     </div>
+    <div class="container">
+      <div id="chart_scatter"></div> <!--display scatter kW vs air temp data-->
+    </div>
+    <div class="container">
+      <div id="calendar_basic"></div> <!--display calendar view with consumption (kWh) data-->
+    </div>
+    <div class="container">
+      <div id="chart_hourly"></div> <!--display average demand (kW) vs hour of day data-->
+    </div>    
     <script>
       csvJson = [];
       function CSVToArray(strData, strDelimiter) {
