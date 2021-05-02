@@ -6,13 +6,13 @@
     <script  
     type="text/javascript"
       src="https://www.gstatic.com/charts/loader.js"
-    >//this is really cool. James testing git push.</script>
+    ></script>
     <style>
       #drop-area {
         width: 350px;
         height: 70px;
         padding: 10px;
-        border: 1px solid #aaaaaa;
+        border: 1px solid blue;
       }
       .container {
         width: 1000px;
@@ -21,9 +21,9 @@
     </style>
   </head>
   <body>
-    <p>Drag and drop utility data:</p>
+    <p>Drag your utility data into the area below:</p>
 
-    <div id="drop-area">Drop csv here</div>
+    <div id="drop-area">Drop csv file here</div>
     <br />
     <div class="container">
       <div id="chart_consumption"></div> <!--display timeseries consumption (kWh) data-->
@@ -38,7 +38,7 @@
       <div id="calendar_basic"></div> <!--display calendar view with consumption (kWh) data-->
     </div>
     <div class="container">
-      <div id="chart_hourly"></div> <!--display average demand (kW) vs hour of day data-->
+      <div id="chart_hourly"></div> <!--display average demand (kW) vs hour of day data. x axis will have 1 - 24 hours-->
     </div>    
     <script>
       CSV_JSON = [];
@@ -152,6 +152,7 @@
       function drawAllCharts() {
         // line chart
         const lineRows = [];
+        const lineDemandRows = [];
         const scatterRows = [];
         const calendarRows = [];
         const barRows = [];
@@ -160,12 +161,18 @@
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
           const usage = parseInt(record["Usage"]);
+          const temp = parseInt(record["Avg. Temperature"]);
+          const demand = parseInt(record["Peak Demand"]);
 
           // create line chart data
           console.log('push to lineRows: ', date, usage);
           lineRows.push([date, usage]);
+          
+          // create line demand chart data
+          lineRows.push([date, demand]);
 
           // create scatter chart data
+          scatterRows.push([temp, usage]);          
 
           // create calendar chart data
           if (moment(previousDate, 'MM/DD/YY H:mm').isSame(moment(date, 'MM/DD/YY H:mm'), 'day')) {
@@ -176,7 +183,33 @@
           }
 
           // create bar chart data
+
+          //insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same. 
         }
+
+        // build line demand chart
+
+        // build scatter chart
+        var data = google.visualization.arrayToDataTable([
+          ['Power (kW)', 'Outdoor air Temperature (F)'],
+          [ 8,      12],
+          [ 4,      5.5],
+          [ 11,     14],
+          [ 4,      5],
+          [ 3,      3.5],
+          [ 6.5,    7]
+        ]); //Think we can change the data format of this to match the other charts.
+
+        var options = {
+          title: '',
+          hAxis: {title: 'Outdoor air Temperature (F)', minValue: 0, maxValue: 100},
+          vAxis: {title: 'Power (kW)', minValue: 0, maxValue: 500},
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.ScatterChart(document.getElementById('chart_scatter'));
+
+        chart.draw(data, options);
 
         // build calendar chart
         var calendarData = new google.visualization.DataTable();
@@ -221,6 +254,45 @@
         );
 
         lineChart.draw(lineData, lineOptions);
+
+        //build bar chart
+        var data = google.visualization.arrayToDataTable([
+          ['Hour', 'Consumption'],
+          ['1', 50],
+          ['2', 50],
+          ['3', 300],
+          ['4', 500],
+          ['5', 500],
+          ['6', 300],
+          ['7', 50],
+          ['8', 50]         
+        ]);//Think we can change the data format of this to match the other charts. This should be 1 to 24 hours rather than the example 1 to 8.
+
+        var options = {
+          chart: {
+            title: 'Average consumption over 24 hours',
+            subtitle: ''
+          },
+          axes: {
+            x: {
+              0: {side: 'bottom'}
+            }
+          },
+          hAxis: {
+            title: 'Time of Day',
+            format: 'h:mm a',
+            viewWindow: {
+              min: [7, 30, 0],
+              max: [17, 30, 0]
+            }
+          },
+          vAxis: {
+            title: ''
+          }
+        };
+
+        var materialChart = new google.charts.Bar(document.getElementById('chart_div'));
+        materialChart.draw(data, options);
       }
     </script>
   </body>
