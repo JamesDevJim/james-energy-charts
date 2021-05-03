@@ -157,7 +157,7 @@
         const calendarRows = [];
         const barRows = [];
         let previousDate;
-        for (let i = 0; i < CSV_JSON.length; i++) {
+        for (let i = 0; i < CSV_JSON.length - 1; i++) {
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
           const usage = parseInt(record["Usage"]);
@@ -166,7 +166,6 @@
           //const AvgDemand = Would like to calculate (AvgDemand = Usage/4) this and put it on the "line demand chart with peak demand in two series"
 
           // create line chart data
-            //console.log('push to lineRows: ', date, usage);
           lineRows.push([date, usage]);
           
           // create line demand chart data
@@ -260,8 +259,6 @@
         var lineData = new google.visualization.DataTable();
         lineData.addColumn("string", "Date");
         lineData.addColumn("number", "Usage");
-
-        //console.log(lineRows);
 
         lineData.addRows(lineRows);
 
