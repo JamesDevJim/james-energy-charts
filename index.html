@@ -199,21 +199,14 @@
           const temp = parseInt(record["Avg. Temperature"]);
           const demand = parseInt(record["Peak Demand"]);
           //const AvgDemand = Would like to calculate (AvgDemand = Usage/4) this and put it on the "line demand chart with peak demand in two series"
-
+          //console.log('date',date);
+          
           // create line chart data
-          lineRows.push([date, usage]);
+          lineRows.push([momDate.toDate(), usage]);
 
           // create line demand chart data
           lineDemandRows.push([momDate.toDate(), demand]);
-          const minTickLabel = momDate.startOf('month').format('MM YY');
-          const maxTickLabel = momDate.add(1, 'month').startOf('month').format('MM YY');
-          if (!lineDemandTicks.includes(minTickLabel)) {
-            lineDemandTicks.push(minTickLabel);
-          }
-          if (!lineDemandTicks.includes(maxTickLabel)) {
-            lineDemandTicks.push(maxTickLabel);
-          }
-
+          
           // create scatter chart data
           scatterRows.push([temp, usage]);
 
@@ -233,50 +226,58 @@
           //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same.
           //TODO: Add feature - drop down to select ALL data or by month
         }
+      
+    // BUILD LINE CHART
+        var lineData = new google.visualization.DataTable();
+        lineData.addColumn("date", "Date");
+        lineData.addColumn("number", "Usage");
+        lineData.addRows(lineRows);
 
-        // build line demand chart
-        var lineDemandData = new google.visualization.DataTable();
-        lineDemandData.addColumn("date", "Month");
-        lineDemandData.addColumn("number", "Demand");
-
-        lineDemandData.addRows(lineDemandRows);
-
-        console.log('lineDemandTicks', lineDemandTicks);
-
-        // lineDemandTicks = lineDemandTicks.map(t => {
-        //   const year = parseInt(moment(t, 'MM YY').format('YYYY'));
-        //   const month = parseInt(moment(t, 'MM DD').format('M'));
-        //   console.log('year', year);
-        //   console.log('month', month);
-        //   return new Date(year, month);
-        // });
-
-        lineDemandTicks = [new Date(2020, 0), new Date(2020, 1), new Date(2020, 2), new Date(2020, 3),
-                  new Date(2020, 4),  new Date(2020, 5), new Date(2020, 6), new Date(2020, 7),
-                  new Date(2020, 8), new Date(2020, 9), new Date(2020, 10), new Date(2020, 11)
-                 ]
-
-        console.log('lineDemandTicks', lineDemandTicks)
-
-        var lineDemandOptions = {
+        var lineOptions = {
+          lineWidth: 1,
           hAxis: {
-            title: "DateTicks",
-            ticks: lineDemandTicks,
+            title: "Date",
+            format: "MMM", 
+            showTextEvery: 1
           },
           vAxis: {
-            title: "Peak Demand (kW)",
+            title: "Usage (kWh)",
+            minValue: 0 //TODO: Make this minValue work. Currently not working.
           },
           explorer: {
             dragToPan: {
-              axis: "horizontal",
+              axis: "horizontal", //Note that this works only with continuous axis. Currently I believe this is a discrete axis. 
             },
+          },  
+        };
+
+        var lineChart = new google.visualization.LineChart(
+          document.getElementById("chart_consumption")
+        );
+        lineChart.draw(lineData, lineOptions);
+
+
+    // BUILD DEMAND LINE CHART
+        var lineDemandData = new google.visualization.DataTable();
+        lineDemandData.addColumn("date", "Date");
+        lineDemandData.addColumn("number", "Demand");
+          //console.log('lineDemandRows',lineDemandRows);
+        lineDemandData.addRows(lineDemandRows);
+
+        var lineDemandOptions = {
+          lineWidth: 1,          
+          hAxis: {
+            title: "Date",
+            format:'MMM',
+            showTextEvery: 1
+          },
+          vAxis: {
+            title: "Peak Demand (kW)",
+            minValue: 0
           },
         };
 
-        var lineDemandChart = new google.charts.Line(
-          document.getElementById("chart_demand")
-        );
-
+        var lineDemandChart = new google.charts.Line(document.getElementById("chart_demand"));
         lineDemandChart.draw(lineDemandData, lineDemandOptions);
 
         // build scatter chart
@@ -326,35 +327,7 @@
 
         calendarChart.draw(calendarData, calendarOptions);
 
-      // BUILD LINE CHART
-        var lineData = new google.visualization.DataTable();
-        lineData.addColumn("string", "Date");
-        lineData.addColumn("number", "Usage");
-        lineData.addRows(lineRows);
 
-        var lineOptions = {
-            //TODO: Make the hAxis readable. Might have to change format to "date" so it can be continuous so we can edit in
-          lineWidth: 1,
-          hAxis: {
-            title: "Date",
-            format: "MMM d, y", //format not working because it is in string format maybe and needs to be continuous?
-            showTextEvery: 30
-          },
-          vAxis: {
-            title: "Usage (kWh)",
-          },
-          explorer: {
-            dragToPan: {
-              axis: "horizontal", //Note that this works only with continuous axis. Currently I believe this is a discrete axis. 
-            },
-          },  
-        };
-
-        var lineChart = new google.visualization.LineChart(
-          document.getElementById("chart_consumption")
-        );
-
-        lineChart.draw(lineData, lineOptions);
 
         //build bar chart
         var barData = new google.visualization.DataTable();
