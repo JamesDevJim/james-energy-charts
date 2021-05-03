@@ -157,6 +157,7 @@
         const calendarRows = [];
         const barRows = [];
         let previousDate;
+        let previousHour;
         for (let i = 0; i < CSV_JSON.length; i++) {
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
@@ -184,7 +185,12 @@
           }
 
           // create bar chart data
-
+          if (moment(previousHour, 'MM/DD/YY H:mm').isSame(moment(date, 'MM/DD/YY H:mm'), 'hour')) { //if same hour, then sum usage
+            barRows[calendarRows.length - 1][1] += (usage || 0);
+          } else {
+            previousHour = date;
+            barRows.push([moment(date, 'MM/DD/YY H:mm').toDate(), usage || 0]);
+          }
             //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same. 
             //TODO: Add feature - drop down to select ALL data or by month
         }
