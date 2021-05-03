@@ -190,7 +190,9 @@
             previousHour = date;
             barRows.push([moment(date, 'MM/DD/YY H:mm').toDate(), usage || 0]);
           }
-            //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same. 
+
+          
+          //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same. 
             //TODO: Add feature - drop down to select ALL data or by month
         }
 
@@ -249,7 +251,7 @@
         var calendarData = new google.visualization.DataTable();
         calendarData.addColumn({ type: 'date', id: 'Date' });
         calendarData.addColumn({ type: 'number', id: 'Daily Usage' });
-          console.log("calendarRows",calendarRows);
+          //console.log("calendarRows",calendarRows);
         calendarData.addRows(calendarRows);
 
         var calendarChart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
@@ -289,6 +291,14 @@
         lineChart.draw(lineData, lineOptions);
 
         //build bar chart       
+        var barData = new google.visualization.DataTable();
+        barData.addColumn("number", "Hour");
+        barData.addColumn("number", "Usage");        
+        console.log('hours',barRows);         
+        barData.addRows(barRows);        
+         
+
+        /*
         var barData = google.visualization.arrayToDataTable([
           ['Hour', 'Consumption'],
           ['1', 50],
@@ -300,6 +310,7 @@
           ['7', 50],
           ['8', 50]         
         ]);//Think we can change the data format of this to match the other charts. This should be 1 to 24 hours rather than the example 1 to 8.
+*/
 
         var barOptions = {
           chart: {
