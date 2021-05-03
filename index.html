@@ -157,7 +157,7 @@
       }
 
       function drawAllCharts() {
-        // line chart
+        // define variables
         const lineRows = [];
         const lineDemandRows = [];
         const scatterRows = [];
@@ -188,6 +188,7 @@
           [22, 0],
           [23, 0],
         ];
+        //Loop through and create arrays for each chart
         let momPreviousDate = moment();
         for (let i = 0; i < CSV_JSON.length - 1; i++) {
           const record = CSV_JSON[i];
@@ -281,7 +282,7 @@
 
         scatterChart.draw(scatterData, scatterOptions);
 
-        // build calendar chart
+      // build calendar chart
         var calendarData = new google.visualization.DataTable();
         calendarData.addColumn({ type: "date", id: "Date" });
         calendarData.addColumn({ type: "number", id: "Daily Usage" });
@@ -298,24 +299,28 @@
 
         calendarChart.draw(calendarData, calendarOptions);
 
-        // build line chart
+      // BUILD LINE CHART
         var lineData = new google.visualization.DataTable();
         lineData.addColumn("string", "Date");
         lineData.addColumn("number", "Usage");
         lineData.addRows(lineRows);
 
         var lineOptions = {
+            //TODO: Make the hAxis readable. Might have to change format to "date" so it can be continuous so we can edit in
+          lineWidth: 1,
           hAxis: {
             title: "Date",
+            format: "MMM d, y", //format not working because it is in string format maybe and needs to be continuous?
+            showTextEvery: 30
           },
           vAxis: {
             title: "Usage (kWh)",
           },
           explorer: {
             dragToPan: {
-              axis: "horizontal",
+              axis: "horizontal", //Note that this works only with continuous axis. Currently I believe this is a discrete axis. 
             },
-          },
+          },  
         };
 
         var lineChart = new google.visualization.LineChart(
@@ -328,7 +333,7 @@
         var barData = new google.visualization.DataTable();
         barData.addColumn("number", "Hour");
         barData.addColumn("number", "Usage");
-        console.log('bar',barRows);
+          //console.log('bar',barRows);
         barData.addRows(barRows);
 
         var barOptions = {
