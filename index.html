@@ -157,6 +157,7 @@
         const calendarRows = [];
         const barRows = [];
         let previousDate;
+        let previousHour;
         for (let i = 0; i < CSV_JSON.length - 1; i++) {
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
