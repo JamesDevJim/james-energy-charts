@@ -166,7 +166,7 @@
           //const AvgDemand = Would like to calculate (AvgDemand = Usage/4) this and put it on the "line demand chart with peak demand in two series"
 
           // create line chart data
-          console.log('push to lineRows: ', date, usage);
+            //console.log('push to lineRows: ', date, usage);
           lineRows.push([date, usage]);
           
           // create line demand chart data
@@ -227,7 +227,13 @@
           title: '',
           hAxis: {title: 'Outdoor air Temperature (F)', minValue: 0, maxValue: 100},
           vAxis: {title: 'Power (kW)', minValue: 0, maxValue: 500},
-          legend: 'none'
+          legend: 'none',
+          dataOpacity: 0.3,
+          explorer: {
+            dragToPan: {
+              axis: "horizontal",
+            },
+          },
         };
 
         var scatterChart = new google.visualization.ScatterChart(document.getElementById('chart_scatter'));
@@ -238,6 +244,7 @@
         var calendarData = new google.visualization.DataTable();
         calendarData.addColumn({ type: 'date', id: 'Date' });
         calendarData.addColumn({ type: 'number', id: 'Daily Usage' });
+          console.log("calendarRows",calendarRows);
         calendarData.addRows(calendarRows);
 
         var calendarChart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
@@ -254,7 +261,7 @@
         lineData.addColumn("string", "Date");
         lineData.addColumn("number", "Usage");
 
-        //console.log(lineRows)
+        //console.log(lineRows);
 
         lineData.addRows(lineRows);
 
