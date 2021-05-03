@@ -160,9 +160,12 @@
         // define variables
         const lineRows = [];
         const lineDemandRows = [];
-        let lineDemandTicks = [];
         const scatterRows = [];
+        const scatterWeekendRows = [];
+        const scatterWeekRows = [];
+        const scatterWorkRows =[];
         const calendarRows = [];
+        const weekendUsage = [];
         const barRows = [
           [0, 0],
           [1, 0],
@@ -197,7 +200,7 @@
           const momDate = moment(date, "MM/DD/YY H:mm");
           const usage = parseInt(record["Usage"]);
           const temp = parseInt(record["Avg. Temperature"]);
-          const demand = parseInt(record["Peak Demand"]);
+          const demand = parseInt(record["Peak Demand"]);    
           //const AvgDemand = Would like to calculate (AvgDemand = Usage/4) this and put it on the "line demand chart with peak demand in two series"
           //console.log('date',date);
           
@@ -207,12 +210,19 @@
           // create line demand chart data
           lineDemandRows.push([momDate.toDate(), demand]);
           
-          // create scatter chart data
+          // create scatter charts data
           scatterRows.push([temp, usage]);
+          
+          
+          //TODO: Finish this IF I cannot get filters to work with Google charts.
+/*          if (momDate.day() === 6 || momDate.day() === 0){  //If weekday is weekend then create array
+            const weekendUsage = parseInt(record["Usage"]);
+            scatterWeekendRows.push([temp, weekendUsage]);
+          }
+*/
 
           // create calendar chart data
-          if (momPreviousDate.isSame(momDate, "day")) {
-            //if same day, then sum usage
+          if (momPreviousDate.isSame(momDate, "day")) {             //if same day, then sum usage
             calendarRows[calendarRows.length - 1][1] += usage || 0;
           } else {
             momPreviousDate = momDate;
@@ -225,8 +235,8 @@
 
           //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same.
           //TODO: Add feature - drop down to select ALL data or by month
-        }
-      
+        }     
+    
     // BUILD LINE CHART
         var lineData = new google.visualization.DataTable();
         lineData.addColumn("date", "Date");
@@ -251,11 +261,8 @@
           },  
         };
 
-        var lineChart = new google.visualization.LineChart(
-          document.getElementById("chart_consumption")
-        );
+        var lineChart = new google.visualization.LineChart(document.getElementById("chart_consumption"));
         lineChart.draw(lineData, lineOptions);
-
 
     // BUILD DEMAND LINE CHART
         var lineDemandData = new google.visualization.DataTable();
@@ -277,7 +284,7 @@
           },
         };
 
-        var lineDemandChart = new google.charts.Line(document.getElementById("chart_demand"));
+        var lineDemandChart = new google.visualization.LineChart(document.getElementById("chart_demand"));
         lineDemandChart.draw(lineDemandData, lineDemandOptions);
 
         // build scatter chart
@@ -329,7 +336,7 @@
 
 
 
-        //build bar chart
+    //BUILD BAR CHART
         var barData = new google.visualization.DataTable();
         barData.addColumn("number", "Hour");
         barData.addColumn("number", "Usage");
