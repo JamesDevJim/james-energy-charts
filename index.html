@@ -25,25 +25,25 @@
 
     <div id="drop-area">Drop csv file here</div>
     <br />
+    <!--display timeseries consumption (kWh) data-->    
     <div class="container">
       <div id="chart_consumption"></div>
-      <!--display timeseries consumption (kWh) data-->
     </div>
+    <!--display timeseries demand (kW) data-->    
     <div class="container">
       <div id="chart_demand"></div>
-      <!--display timeseries demand (kW) data-->
     </div>
-    <div class="container">
-      <div id="chart_scatter"></div>
-      <!--display scatter kW vs air temp data-->
-    </div>
+    <!--display calendar view with consumption (kWh) data-->    
     <div class="container">
       <div id="calendar_basic"></div>
-      <!--display calendar view with consumption (kWh) data-->
-    </div>
+    </div>    
+    <!--display scatter kW vs air temp data-->    
     <div class="container">
-      <div id="chart_hourly"></div>
-      <!--display average demand (kW) vs hour of day data. x axis will have 1 - 24 hours-->
+      <div id="chart_scatter"></div>
+    </div>
+<!--display average demand (kW) vs hour of day data. x axis will have 1 - 24 hours-->
+    <div class="container">
+      <div id="chart_hourly"></div> 
     </div>
     <script>
       CSV_JSON = [];
@@ -151,7 +151,7 @@
     <script>
       function loadCharts() {
         google.charts.load("current", {
-          packages: ["calendar", "corechart", "line", "bar"],
+          packages: ["calendar", "corechart", "bar", "line"]
         });
         google.charts.setOnLoadCallback(drawAllCharts);
       }
@@ -302,7 +302,6 @@
         var lineData = new google.visualization.DataTable();
         lineData.addColumn("string", "Date");
         lineData.addColumn("number", "Usage");
-
         lineData.addRows(lineRows);
 
         var lineOptions = {
@@ -329,11 +328,12 @@
         var barData = new google.visualization.DataTable();
         barData.addColumn("number", "Hour");
         barData.addColumn("number", "Usage");
+        console.log('bar',barRows);
         barData.addRows(barRows);
 
         var barOptions = {
           chart: {
-            title: "Average consumption over 24 hours",
+            title: "",
             subtitle: "",
           },
           axes: {
