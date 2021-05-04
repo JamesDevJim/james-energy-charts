@@ -25,17 +25,13 @@
 
     <div id="drop-area">Drop csv file here</div>
     <br />
-    <!--display timeseries consumption (kWh) data-->    
-
+    <!--display timeseries consumption (kWh) and demand (kW) data w/ a filter range slider-->    
     <div  id="chartRangeFilter_dashboard_div">
       <div  id="chart"></div>   
       <div  id="chart_demand"></div>       
       <div  id="chartRangeFilter_control_div"></div>        
     </div>
-    <!--display timeseries demand (kW) data-->    
-    <div class="container">
-      //<div id="chart_demand"></div>
-    </div>
+   
     <!--display calendar view with consumption (kWh) data-->    
     <div class="container">
       <div id="calendar_basic"></div>
@@ -209,7 +205,6 @@
           //console.log('date',date);
           
           // create line chart data
-           
           lineRows.push([momDate.toDate(), usage]);
 
 
@@ -218,7 +213,7 @@
           
           // create scatter charts data
           scatterRows.push([temp, usage]);
-          
+         
           
           //TODO: Finish this IF I cannot get filters to work with Google charts.
 /*          if (momDate.day() === 6 || momDate.day() === 0){  //If weekday is weekend then create array
@@ -242,11 +237,12 @@
           //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same.
           //TODO: Add feature - drop down to select ALL data or by month
         }     
-        console.log('lineRows',lineRows);
+
+        // console.log('lineRows',lineRows);
+        //   console.log('max',maxScatterTemp);
+        //   console.log('min',minScatterTemp);           
 
       //BUILD CONSUMPTION & DEMAND LINE CHARTS W/ FILTER
-  
-
         var dashboard = new google.visualization.Dashboard(document.getElementById('chartRangeFilter_dashboard_div'));
 
         var control = new google.visualization.ControlWrapper({
@@ -342,9 +338,8 @@
         }
         });       
       
-        dashboard.bind(control, [chart,lineDemandChart]);
-        dashboard.draw(lineData);
-        dashboard.draw(lineDemandData);        
+        dashboard.bind(control, [chart, lineDemandChart]);
+        dashboard.draw(lineData, lineDemandData);       
   
       //BUILD CALENDAR CHART
         var calendarData = new google.visualization.DataTable();
@@ -370,14 +365,23 @@
 
         scatterData.addRows(scatterRows);
 
+        const maxScatterTemp = scatterRows.reduce((max, current) => Math.max(max, current[0]), -Infinity) //Finding max and min values for the chart display ranges
+        const minScatterTemp = scatterRows.reduce((min, current) => Math.min(min, current[0]), +Infinity)
+        const maxScatterKw = scatterRows.reduce((max, current) => Math.max(max, current[1]), -Infinity)        
+        const minScatterKw = scatterRows.reduce((min, current) => Math.min(min, current[1]), +Infinity)
+        
         var scatterOptions = {
           title: "",
           hAxis: {
-            title: "Outdoor air Temperature (F)",
-            minValue: 0,
-            maxValue: 100,
+            title: "Outdoor Air Temp (F)",
+            minValue: Math.ceil((minScatterTemp-1)*5)/5,  //This rounds down to the nearest 5/100.
+            maxValue: Math.ceil((maxScatterTemp+1)/5)*5,  //This rounds up to the nearest 5/100.
           },
-          vAxis: { title: "Power (kW)", minValue: 0, maxValue: 500 },
+          vAxis: { 
+            title: "Power (kW)", 
+            minValue: 0, 
+            maxValue: maxScatterKw+10, 
+          },
           legend: "none",
           dataOpacity: 0.3,
           explorer: {
@@ -387,12 +391,8 @@
           },
         };
 
-        var scatterChart = new google.visualization.ScatterChart(
-          document.getElementById("chart_scatter")
-        );
-
+        var scatterChart = new google.visualization.ScatterChart(document.getElementById("chart_scatter"));
         scatterChart.draw(scatterData, scatterOptions);
-
 
     //BUILD BAR CHART
         var barData = new google.visualization.DataTable();
