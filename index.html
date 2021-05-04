@@ -319,14 +319,15 @@
         chartType: 'LineChart',
         containerId: 'chart_demand',
         options: {
-            lineWidth: 1,  
+          colors: ['#d3362d'],  
+          lineWidth: 1,  
             // Use the same chart area width as the control for axis alignment.
             chartArea: {
                 height: '80%',
                 width: '90%'
             },
             vAxis: {
-              title: "Usage (kWh)",
+              title: "Peak Demand (kW)",
               viewWindow: {
                     min: 0,
                   // max: 60
