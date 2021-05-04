@@ -26,8 +26,10 @@
     <div id="drop-area">Drop csv file here</div>
     <br />
     <!--display timeseries consumption (kWh) data-->    
-    <div class="container">
-      <div id="chart_consumption"></div>
+    <div >
+      <div  id="chartRangeFilter_dashboard_div"></div>
+      <div  id="chart"></div>   
+      <div  id="chartRangeFilter_control_div"></div>        
     </div>
     <!--display timeseries demand (kW) data-->    
     <div class="container">
@@ -151,7 +153,7 @@
     <script>
       function loadCharts() {
         google.charts.load("current", {
-          packages: ["calendar", "corechart", "bar", "line"]
+          packages: ["calendar", "corechart", "bar", "line", "controls"]
         });
         google.charts.setOnLoadCallback(drawAllCharts);
       }
@@ -160,6 +162,7 @@
         // define variables
         const lineRows = [];
         const lineDemandRows = [];
+        const lineUsageDemandRows = [];
         const scatterRows = [];
         const scatterWeekendRows = [];
         const scatterWeekRows = [];
@@ -205,7 +208,9 @@
           //console.log('date',date);
           
           // create line chart data
+           
           lineRows.push([momDate.toDate(), usage]);
+
 
           // create line demand chart data
           lineDemandRows.push([momDate.toDate(), demand]);
@@ -236,39 +241,79 @@
           //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same.
           //TODO: Add feature - drop down to select ALL data or by month
         }     
-    
-    // BUILD LINE CHART
-        var lineData = new google.visualization.DataTable();
-        lineData.addColumn("date", "Date");
-        lineData.addColumn("number", "Usage");
-        lineData.addRows(lineRows);
+        console.log('lineRows',lineRows);
 
-        var lineOptions = {
-          lineWidth: 1,
-          hAxis: {
-            title: "Date",
-            format: "MMM", 
-            showTextEvery: 1
+      //BUILD LINE CHART W/ FILTER
+  
+        var dashboard = new google.visualization.Dashboard(
+            document.getElementById('chartRangeFilter_dashboard_div'));
+
+        var control = new google.visualization.ControlWrapper({
+          'controlType': 'ChartRangeFilter',
+          'containerId': 'chartRangeFilter_control_div',
+          'options': {
+            // Filter by the date axis.
+            'filterColumnIndex': 0,
+            'ui': {
+              'chartType': 'LineChart',
+              'chartOptions': {
+                'chartArea': {'width': '90%',
+                              'height': '20%'
+              },
+                'hAxis': {'baselineColor': 'none'}
+              },
+              // Display a single series that shows the closing value of the stock.
+              // Thus, this view has two columns: the date (axis) and the stock value (line series).
+              'chartView': {
+                'columns': [0, 1]
+              },
+              // 1 day in milliseconds = 24 * 60 * 60 * 1000 = 86,400,000
+              'minRangeSize': 86400000
+            }
           },
-          vAxis: {
-            title: "Usage (kWh)",
-            minValue: 0 //TODO: Make this minValue work. Currently not working.
-          },
-          explorer: {
-            dragToPan: {
-              axis: "horizontal", //Note that this works only with continuous axis. Currently I believe this is a discrete axis. 
+          // Initial range: 2012-02-09 to 2012-03-20.
+          'state': {'range': {'start': new Date(2020, 1, 1), 'end': new Date(2020, 12, 30)}} //TODO: specify this as the data set range
+        });
+
+        var chart = new google.visualization.ChartWrapper({
+        chartType: 'LineChart',
+        containerId: 'chart',
+        options: {
+            lineWidth: 1,  
+          // Use the same chart area width as the control for axis alignment.
+            chartArea: {
+                height: '80%',
+                width: '90%'
             },
-          },  
-        };
+            vAxis: {
+              title: "Usage (kWh)",
+              viewWindow: {
+                    min: 0,
+                  // max: 60
+                }
+            },
+              hAxis: {
+                format: "MMM d, y"
+              },
+            legend: {
+                position: 'none'
+            }
+        }
+        });
 
-        var lineChart = new google.visualization.LineChart(document.getElementById("chart_consumption"));
-        lineChart.draw(lineData, lineOptions);
-
-    // BUILD DEMAND LINE CHART
+        var lineData = new google.visualization.DataTable();
+        lineData.addColumn('date', 'Date');
+        lineData.addColumn("number", "Usage");
+        lineData.addRows(lineRows);    
+        dashboard.bind(control, chart);
+        dashboard.draw(lineData);
+  
+        // BUILD DEMAND LINE CHART
         var lineDemandData = new google.visualization.DataTable();
         lineDemandData.addColumn("date", "Date");
         lineDemandData.addColumn("number", "Demand");
           //console.log('lineDemandRows',lineDemandRows);
+    
         lineDemandData.addRows(lineDemandRows);
 
         var lineDemandOptions = {
