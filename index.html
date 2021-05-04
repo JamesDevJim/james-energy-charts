@@ -26,14 +26,15 @@
     <div id="drop-area">Drop csv file here</div>
     <br />
     <!--display timeseries consumption (kWh) data-->    
-    <div >
-      <div  id="chartRangeFilter_dashboard_div"></div>
+
+    <div  id="chartRangeFilter_dashboard_div">
       <div  id="chart"></div>   
+      <div  id="chart_demand"></div>       
       <div  id="chartRangeFilter_control_div"></div>        
     </div>
     <!--display timeseries demand (kW) data-->    
     <div class="container">
-      <div id="chart_demand"></div>
+      //<div id="chart_demand"></div>
     </div>
     <!--display calendar view with consumption (kWh) data-->    
     <div class="container">
@@ -243,10 +244,10 @@
         }     
         console.log('lineRows',lineRows);
 
-      //BUILD LINE CHART W/ FILTER
+      //BUILD CONSUMPTION & DEMAND LINE CHARTS W/ FILTER
   
-        var dashboard = new google.visualization.Dashboard(
-            document.getElementById('chartRangeFilter_dashboard_div'));
+
+        var dashboard = new google.visualization.Dashboard(document.getElementById('chartRangeFilter_dashboard_div'));
 
         var control = new google.visualization.ControlWrapper({
           'controlType': 'ChartRangeFilter',
@@ -275,6 +276,12 @@
           'state': {'range': {'start': new Date(2020, 1, 1), 'end': new Date(2020, 12, 30)}} //TODO: specify this as the data set range
         });
 
+        //Consumption Chart building
+        var lineData = new google.visualization.DataTable();
+        lineData.addColumn('date', 'Date');
+        lineData.addColumn("number", "Usage");
+        lineData.addRows(lineRows);          
+              
         var chart = new google.visualization.ChartWrapper({
         chartType: 'LineChart',
         containerId: 'chart',
@@ -300,39 +307,62 @@
             }
         }
         });
-
-        var lineData = new google.visualization.DataTable();
-        lineData.addColumn('date', 'Date');
-        lineData.addColumn("number", "Usage");
-        lineData.addRows(lineRows);    
-        dashboard.bind(control, chart);
-        dashboard.draw(lineData);
-  
-        // BUILD DEMAND LINE CHART
+        
+        // Demand Chart Building     
         var lineDemandData = new google.visualization.DataTable();
         lineDemandData.addColumn("date", "Date");
         lineDemandData.addColumn("number", "Demand");
           //console.log('lineDemandRows',lineDemandRows);
-    
-        lineDemandData.addRows(lineDemandRows);
+        lineDemandData.addRows(lineDemandRows);   
+ 
+        var lineDemandChart = new google.visualization.ChartWrapper({
+        chartType: 'LineChart',
+        containerId: 'chart_demand',
+        options: {
+            lineWidth: 1,  
+            // Use the same chart area width as the control for axis alignment.
+            chartArea: {
+                height: '80%',
+                width: '90%'
+            },
+            vAxis: {
+              title: "Usage (kWh)",
+              viewWindow: {
+                    min: 0,
+                  // max: 60
+                }
+            },
+              hAxis: {
+                format: "MMM d, y"
+              },
+            legend: {
+                position: 'none'
+            }
+        }
+        });       
+      
+        dashboard.bind(control, [chart,lineDemandChart]);
+        dashboard.draw(lineData);
+        dashboard.draw(lineDemandData);        
+  
+      //BUILD CALENDAR CHART
+        var calendarData = new google.visualization.DataTable();
+        calendarData.addColumn({ type: "date", id: "Date" });
+        calendarData.addColumn({ type: "number", id: "Daily Usage" });
+        calendarData.addRows(calendarRows);
 
-        var lineDemandOptions = {
-          lineWidth: 1,          
-          hAxis: {
-            title: "Date",
-            format:'MMM',
-            showTextEvery: 1
-          },
-          vAxis: {
-            title: "Peak Demand (kW)",
-            minValue: 0
-          },
+        var calendarChart = new google.visualization.Calendar(
+          document.getElementById("calendar_basic")
+        );
+
+        var calendarOptions = {
+          title: "Energy Consumption",
+          height: 350,
         };
 
-        var lineDemandChart = new google.visualization.LineChart(document.getElementById("chart_demand"));
-        lineDemandChart.draw(lineDemandData, lineDemandOptions);
+        calendarChart.draw(calendarData, calendarOptions);
 
-        // build scatter chart
+      //BUILD SCATTER CHART
         var scatterData = new google.visualization.DataTable();
         scatterData.addColumn("number", "Temp");
         scatterData.addColumn("number", "Demand");
@@ -361,24 +391,6 @@
         );
 
         scatterChart.draw(scatterData, scatterOptions);
-
-      // build calendar chart
-        var calendarData = new google.visualization.DataTable();
-        calendarData.addColumn({ type: "date", id: "Date" });
-        calendarData.addColumn({ type: "number", id: "Daily Usage" });
-        calendarData.addRows(calendarRows);
-
-        var calendarChart = new google.visualization.Calendar(
-          document.getElementById("calendar_basic")
-        );
-
-        var calendarOptions = {
-          title: "Energy Consumption",
-          height: 350,
-        };
-
-        calendarChart.draw(calendarData, calendarOptions);
-
 
 
     //BUILD BAR CHART
