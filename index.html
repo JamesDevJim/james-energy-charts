@@ -166,7 +166,7 @@
         const scatterWorkRows =[];
         const calendarRows = [];
         const weekendUsage = [];
-        const barRows = [
+        const summedBarRows = [
           [0, 0],
           [1, 0],
           [2, 0],
@@ -194,6 +194,7 @@
         ];
         //Loop through and create arrays for each chart
         let momPreviousDate = moment();
+        const hourLength = [];
         for (let i = 0; i < CSV_JSON.length - 1; i++) {
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
@@ -232,11 +233,27 @@
 
           // create bar chart data
           const hour = parseInt(momDate.format("H"));
-          barRows[hour][1] += usage || 0;
+          if (hourLength[hour]) {
+            hourLength[hour]++;
+          } else {
+            hourLength[hour] = 1;
+          }
+          summedBarRows[hour][1] += usage || 0;
 
           //TODO: insert function here to 1. SUM data by the hour 2. AVERAGE all usage IF the hours are the same.
           //TODO: Add feature - drop down to select ALL data or by month
-        }     
+        }
+
+        const barRows = summedBarRows;
+        for (const index in summedBarRows) {
+          const i = parseInt(index);
+          const summedRow = summedBarRows[i];
+
+          console.log(`summedRow`, summedRow);
+          
+          barRows[i] = [i, summedRow[1] / hourLength[i]];
+        }
+        console.log(`barRows`, barRows);
 
         // console.log('lineRows',lineRows);
         //   console.log('max',maxScatterTemp);
