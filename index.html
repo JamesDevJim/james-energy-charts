@@ -254,7 +254,11 @@
         let momPreviousDate = moment();
         const hourLength = [];
         const hourWeekendLength = []; 
-        const hourWeekLength = [];               
+        const hourWeekLength = [];
+        let dateMax = [];
+        let dateMin = moment();
+        let usageTotal = 0;
+
         for (let i = 0; i < CSV_JSON.length - 1; i++) {
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
@@ -265,6 +269,15 @@
           //const AvgDemand = Would like to calculate (AvgDemand = Usage/4) this and put it on the "line demand chart with peak demand in two series"
           //console.log('date',date);
           
+          // create metric summary
+          if (momDate > dateMax ){
+            dateMax = momDate;
+          }
+          if (momDate < dateMin){
+            dateMin = momDate;
+          }
+          usageTotal += usage; 
+
           // create consumption and demand line charts data
           lineRows.push([momDate.toDate(), usage, demand]);
 
@@ -323,6 +336,12 @@
           }
 
         } // End of loop for creating data in each array
+        console.log('Max Date: ',dateMax.format('MM/DD/YYYY hh:mm'));
+        console.log('Min Date: ',dateMin.format('MM/DD/YYYY hh:mm')); 
+        console.log('Data Days:',Math.round((dateMax-dateMin)/(60*60*24*1000)));
+        console.log('Total Usage: ',usageTotal);               
+
+
 
         const barRows = summedBarRows;
         for (const index in summedBarRows) { //make Total barRows an average by dividing by hourLength
