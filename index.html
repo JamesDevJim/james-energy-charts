@@ -45,8 +45,7 @@
     </div>
 <!--display average demand (kW) vs hour of day data. x axis will have 1 - 24 hours-->
     <div style="display: flex;">
-      <div id="chart_hourly"></div> 
-      <div id="chart_hourlyWork"></div>
+      <!--<div id="chart_hourly"></div>-->
       <div id="chart_hourlyWeek"></div>
       <div id="chart_hourlyWeekend"></div>
     </div>
@@ -172,7 +171,7 @@
         const scatterWorkRows =[];
         const calendarRows = [];
         const weekendUsage = [];
-        const barRows = [
+        const summedBarRows = [
           [0, 0],
           [1, 0],
           [2, 0],
@@ -198,7 +197,7 @@
           [22, 0],
           [23, 0],
         ];
-        const barMinRows = [
+        const summedWeekendBarRows = [
           [0, 0],
           [1, 0],
           [2, 0],
@@ -223,8 +222,8 @@
           [21, 0],
           [22, 0],
           [23, 0],
-        ];;
-        const barMaxRows = [
+        ];
+        const summedWeekBarRows = [
           [0, 0],
           [1, 0],
           [2, 0],
@@ -249,9 +248,13 @@
           [21, 0],
           [22, 0],
           [23, 0],
-        ];;
+        ];
+
         //Loop through and create arrays for each chart
         let momPreviousDate = moment();
+        const hourLength = [];
+        const hourWeekendLength = []; 
+        const hourWeekLength = [];               
         for (let i = 0; i < CSV_JSON.length - 1; i++) {
           const record = CSV_JSON[i];
           const date = record["End Date Time"];
@@ -270,16 +273,16 @@
           //lineDemandRows.push([momDate.toDate(), demand]);
           
           // create scatter charts data
-          scatterRows.push([temp, usage]);
+          scatterRows.push([temp, usage]); //All hours
           
 
-          if (momDate.day() == 6 || momDate.day() == 0){  //If weekend then assign to 3rd column
+          if (momDate.day() == 6 || momDate.day() == 0){  //If weekend 
             scatterWeekendRows.push([temp, usage]);
           } 
           else {
-            scatterWeekRows.push([temp, usage]); //if week and during work hours assign to 4th column
+            scatterWeekRows.push([temp, usage]); //if week
             
-            if( momDate.hour() >= 8 && momDate.hour() < 17) {
+            if( momDate.hour() >= 8 && momDate.hour() < 17) {   //if week and during work hours (8am-5pm)
             scatterWorkRows.push([temp, usage]);
             }
           } 
@@ -293,36 +296,58 @@
           }
 
           // create bar chart data         
-          const hour = parseInt(momDate.format("H")); //Sum all hours
-          barRows[hour][1] += usage || 0;    
-
+          const hour = parseInt(momDate.format("H")); 
           
-          if (momDate.minute() == 0){
-            var hourQ1 = usage;
+          if (hourLength[hour]) {   // Count total hour length
+            hourLength[hour]++; 
+          } else {
+            hourLength[hour] = 1;
           }
-          if (momDate.minute() == 15){
-            var hourQ2 = usage;
-          }
-          if (momDate.minute() == 30){
-            var hourQ3 = usage;
-          }       
-          if (momDate.minute() == 45){
-            hourQ4 = usage;
-            var hourMin = Math.min([hourQ1, hourQ2, hourQ3,hourQ4]); //select the smallest hour
-            var hourMax = Math.max([hourQ1, hourQ2, hourQ3,hourQ4]); //select the largest hour
-            barMinRows[hour][1] += hourMin || 0;  //smallest hour to array. Effectively summing all min hours.
-            barMaxRows[hour][1] += hourMax || 0;  //Sum all max hours
-          }     
+          summedBarRows[hour][1] += usage || 0; //Sum all hours
 
-        //  console.log('hourQ1',momDate.format("mm")); 
-        //  console.log('hourQ2',parseInt(momDate.format("mm")));    
-        //  console.log('hourQ3',momDate.minute());
-        
+          if (momDate.day() == 6 || momDate.day() == 0) {  
+            if (hourWeekendLength[hour]) {   // Count weekend hour length
+            hourWeekendLength[hour]++; 
+            } else {
+            hourWeekendLength[hour] = 1;
+            }
+            
+            summedWeekendBarRows[hour][1] += usage || 0; //Sum weekend bar rows
+          } else {
+              if (hourWeekLength[hour]) {   // Count week hour length
+              hourWeekLength[hour]++; 
+              } else {
+              hourWeekLength[hour] = 1;
+              }
+            summedWeekBarRows[hour][1] += usage || 0; //Sum week bar rows
+          }
+
+        } // End of loop for creating data in each array
+
+        const barRows = summedBarRows;
+        for (const index in summedBarRows) { //make Total barRows an average by dividing by hourLength
+          const i = parseInt(index);
+          const summedRow = summedBarRows[i];
+          //console.log(`summedRow`, summedRow);
+          barRows[i] = [i, summedRow[1] / (hourLength[i]/4)]; //Need to divide by 4 because there are 4 quarters in 1 hour. 
         }
-        //console.log('scatterRows',scatterRows);
-        console.log('BarRows',barRows);
-        console.log('BarMinRows',barMinRows);
-        console.log('BarMaxRows',barMinRows);
+
+        const barWeekendRows = summedWeekendBarRows;
+        for (const index in summedWeekendBarRows) { //make weekend barRows an average by dividing by hourLength
+          const i = parseInt(index);
+          const summedWeekendRow = summedWeekendBarRows[i];
+          //console.log(`summedRow`, summedRow);
+          barWeekendRows[i] = [i, summedWeekendRow[1] / (hourWeekendLength[i]/4)];
+        }
+        
+        const barWeekRows = summedWeekBarRows;
+        for (const index in summedWeekBarRows) { //make week barRows an average by dividing by hourLength
+          const i = parseInt(index);
+          const summedWeekRow = summedWeekBarRows[i];
+          //console.log(`summedRow`, summedRow);
+          barWeekRows[i] = [i, summedWeekRow[1] / (hourWeekLength[i]/4)];
+        }
+
       //BUILD CONSUMPTION & DEMAND LINE CHARTS W/ FILTER
         var dashboard = new google.visualization.Dashboard(document.getElementById('chartRangeFilter_dashboard_div'));
 
@@ -508,22 +533,20 @@
         scatterWeekendChart.draw(scatterWeekendData, scatterOptions);    
 
     //BUILD BAR CHART
-       // Make sum 
-        barAvgRows = [];
-        barAvgMaxRows = [];
-        barAvgMinRows = [];        
-        for (let i = 0; i < barRows.length; i++) {        
-          barAvgRows.push([i,Math.round(barRows[i][1]/(CSV_JSON.length/(24))),Math.max(barRows[i][1]/(CSV_JSON.length/(24))),Math.max(barRows[i][1]/(CSV_JSON.length/(24)))]); //Need to verify this is providing the correct value.
-        };
-        console.log('barRows',barRows);
-        console.log('barAvgRows',barAvgRows);
-
         var barData = new google.visualization.DataTable();
         barData.addColumn("number", "Hour");
-        barData.addColumn("number", "Avg Demand");
-        barData.addColumn("number", "Avg Max");
-        barData.addColumn("number", "Avg Min");        
-        barData.addRows(barAvgRows);
+        barData.addColumn("number", "Avg Total Demand");      
+        barData.addRows(barRows);
+
+        var barWeekData = new google.visualization.DataTable();
+        barWeekData.addColumn("number", "Hour");
+        barWeekData.addColumn("number", "Avg Week Demand");    
+        barWeekData.addRows(barWeekRows);
+
+        var barWeekendData = new google.visualization.DataTable();
+        barWeekendData.addColumn("number", "Hour");
+        barWeekendData.addColumn("number", "Avg Weekend Demand");    
+        barWeekendData.addRows(barWeekendRows);       
 
         var barOptions = {
           chart: {
@@ -548,17 +571,14 @@
           },
         };
 
-        var barChart = new google.visualization.ComboChart(document.getElementById("chart_hourly"));
-        barChart.draw(barData, barOptions);
+        // var barChart = new google.visualization.ComboChart(document.getElementById("chart_hourly"));
+        // barChart.draw(barData, barOptions);
 
-        var barChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWork"));
-        barChart.draw(barData, barOptions);
-
-        var barChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWeek"));
-        barChart.draw(barData, barOptions);
+        var barWeekChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWeek"));
+        barWeekChart.draw(barWeekData, barOptions);
         
-        var barChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWeekend"));
-        barChart.draw(barData, barOptions);
+        var barWeekendChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWeekend"));
+        barWeekendChart.draw(barWeekendData, barOptions);
 
       }
       loadCharts();
