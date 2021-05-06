@@ -39,7 +39,8 @@
         width: 300px;
         height: 150px;
         padding: 10px;
-        border: 1px solid blue;
+        border: 3px solid gray;
+        border-style: dashed;
         cursor: cell;
         margin:0 auto;"
       id="drop-area">Drop csv file here <br/><span style="font-size: 50px;">📁</span></div>
@@ -76,7 +77,9 @@
       // When button click run fuction to populate 
       function sampleOffice() {
         var text = document.getElementById("sampleOfficeDemo");
-        //CSV_JSON = []; //TODO: have this pull from link        
+        //CSV_JSON = []; //TODO: have this pull from link   
+        //getFile = 'https://media.githubusercontent.com/media/JamesDevJim/james-energy-charts/master/FullSample.csv'   
+        //CSV_JSON =  getFile
         loadCharts();
         // Statement to display Sample Data Loaded
         if (text.style.display === "none") {
@@ -205,7 +208,7 @@
 
       function loadCharts() {
         google.charts.load("current", {
-          packages: ["calendar", "corechart", "bar", "line", "controls"]
+          packages: ["calendar", "corechart", "bar", "line", "controls", "vegachart"]
         });
         google.charts.setOnLoadCallback(drawAllCharts);
       }
@@ -666,6 +669,108 @@
         
         var barWeekendChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWeekend"));
         barWeekendChart.draw(barWeekendData, barOptions);
+
+        //BUILD HEATMAP CHART
+        const dataTable = new google.visualization.DataTable();
+        dataTable.addColumn({type: 'string', 'id': 'category'});
+        dataTable.addColumn({type: 'number', 'id': 'amount'});
+        dataTable.addRows([
+          ['A', 28],
+          ['B', 55],
+          ['C', 43],
+          ['D', 91],
+          ['E', 81],
+          ['F', 53],
+          ['G', 19],
+          ['H', 87],
+        ]);
+
+        const options = {
+          "vega": {
+            "$schema": "https://vega.github.io/schema/vega/v4.json",
+            "width": 500,
+            "height": 200,
+            "padding": 5,
+
+            'data': [{'name': 'table', 'source': 'datatable'}],
+
+            "signals": [
+              {
+                "name": "tooltip",
+                "value": {},
+                "on": [
+                  {"events": "rect:mouseover", "update": "datum"},
+                  {"events": "rect:mouseout",  "update": "{}"}
+                ]
+              }
+            ],
+
+            "scales": [
+              {
+                "name": "xscale",
+                "type": "band",
+                "domain": {"data": "table", "field": "category"},
+                "range": "width",
+                "padding": 0.05,
+                "round": true
+              },
+              {
+                "name": "yscale",
+                "domain": {"data": "table", "field": "amount"},
+                "nice": true,
+                "range": "height"
+              }
+            ],
+
+            "axes": [
+              { "orient": "bottom", "scale": "xscale" },
+              { "orient": "left", "scale": "yscale" }
+            ],
+
+            "marks": [
+              {
+                "type": "rect",
+                "from": {"data":"table"},
+                "encode": {
+                  "enter": {
+                    "x": {"scale": "xscale", "field": "category"},
+                    "width": {"scale": "xscale", "band": 1},
+                    "y": {"scale": "yscale", "field": "amount"},
+                    "y2": {"scale": "yscale", "value": 0}
+                  },
+                  "update": {
+                    "fill": {"value": "steelblue"}
+                  },
+                  "hover": {
+                    "fill": {"value": "red"}
+                  }
+                }
+              },
+              {
+                "type": "text",
+                "encode": {
+                  "enter": {
+                    "align": {"value": "center"},
+                    "baseline": {"value": "bottom"},
+                    "fill": {"value": "#333"}
+                  },
+                  "update": {
+                    "x": {"scale": "xscale", "signal": "tooltip.category", "band": 0.5},
+                    "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -2},
+                    "text": {"signal": "tooltip.amount"},
+                    "fillOpacity": [
+                      {"test": "datum === tooltip", "value": 0},
+                      {"value": 1}
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        };
+
+        const chart = new google.visualization.VegaChart(document.getElementById('chart-div'));
+        chart.draw(dataTable, options);
 
       }
       loadCharts();
