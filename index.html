@@ -192,8 +192,8 @@
         e.preventDefault();
         let dt = e.dataTransfer;
         let files = dt.files;
-
         const csv = await files[0].text();
+        //console.log('csv', csv);       
         CSV_JSON = CSV2JSON(csv);
         //console.log('CSVdata', CSV_JSON);
         loadCharts();
@@ -308,7 +308,7 @@
           [22, 0],
           [23, 0],
         ];
-
+        const hourlyRows = [];
         //Loop through and create arrays for each chart
         let momPreviousDate = moment();
         const hourLength = [];
@@ -394,8 +394,24 @@
             summedWeekBarRows[hour][1] += usage || 0; //Sum week bar rows
           }
 
+          //create hourly data for heat map      
+          if (momDate.format("m")==15){
+              var hourQ1Usage = usage;
+          }
+          if (momDate.format("m")==30){
+              var hourQ2Usage = usage;
+          }         
+          if (momDate.format("m")==45){
+              var hourQ3Usage = usage;
+          }    
+          if (momDate.format("m")==0){
+              var hourQ4Usage = usage;
+              var hourSumUsage = hourQ1Usage+hourQ2Usage+hourQ3Usage+hourQ4Usage;
+              hourlyRows.push([momDate.toDate(),hourSumUsage]); 
+          }             
+          
         } // End of loop for creating data in each array
-
+        //console.log("hourlyRows",hourlyRows);
 
         //console.log('Max Date: ',dateMax.format('MM/DD/YYYY hh:mm'));
         //console.log('Min Date: ',dateMin.format('MM/DD/YYYY hh:mm')); 
@@ -678,96 +694,97 @@
 
         //BUILD HEATMAP CHART
         const dataTable = new google.visualization.DataTable();
-        dataTable.addColumn({type: 'string', 'id': 'category'});
-        dataTable.addColumn({type: 'number', 'id': 'amount'});
-        dataTable.addRows([
-          ['A', 28],
-          ['B', 55],
-          ['C', 43],
-          ['D', 91],
-          ['E', 81],
-          ['F', 53],
-          ['G', 19],
-          ['H', 87],
-        ]);
+        dataTable.addColumn({type: 'date', 'id': 'date'});//Importing data via "With datatable" using my own data https://developers.google.com/chart/interactive/docs/gallery/vegachart
+        dataTable.addColumn({type: 'number', 'id': 'dailyUsage'});        
+        dataTable.addRows(hourlyRows);
+        //console.log(hourlyRows);
 
-        const options = {
+        const heatOptions = {
           "vega": {
-            "$schema": "https://vega.github.io/schema/vega/v4.json",
+            "$schema": "https://vega.github.io/schema/vega/v5.json",
+            "description": "A heatmap showing average daily temperatures in Seattle for each hour of the day.",
             "width": 500,
-            "height": 200,
-            "padding": 5,
+            "height": 1200,
+            "padding": 200,
 
-            'data': [{'name': 'table', 'source': 'datatable'}],
+            "title": {
+              "text": "Energy",
+              "anchor": "middle",
+              "fontSize": 16,
+              "frame": "group",
+              "offset": 6
+            },
 
             "signals": [
-              {
-                "name": "tooltip",
-                "value": {},
-                "on": [
-                  {"events": "rect:mouseover", "update": "datum"},
-                  {"events": "rect:mouseout",  "update": "{}"}
-                ]
-              }
+              {"name": "palette", "value": "Plasma"}, //Can change gradiant. Look at list on this example: https://vega.github.io/vega/examples/heatmap/
+              {"name": "reverse", "value": false, "bind": {"input": "checkbox"}}
             ],
 
+            'data': [{'name': 'table', 
+                      'source': 'datatable',
+                      "transform": [
+                        {"type": "formula", "as": "hour", "expr": "hours(datum.date)"},
+                        { "type": "formula", "as": "day",
+                          "expr": "datetime(year(datum.date), month(datum.date), date(datum.date))"}
+                      ]
+                    }],
+
+            
             "scales": [
               {
-                "name": "xscale",
-                "type": "band",
-                "domain": {"data": "table", "field": "category"},
-                "range": "width",
-                "padding": 0.05,
-                "round": true
+                "name": "y",
+                "type": "time",
+                'domain': {'data': 'table', 'field': 'day'},
+                "range": "height"
               },
               {
-                "name": "yscale",
-                "domain": {"data": "table", "field": "amount"},
-                "nice": true,
-                "range": "height"
+                "name": "x",
+                "type": "band",
+                "domain": [
+                  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 
+                ],
+                "range": "width"
+              },
+              {
+                "name": "color",
+                "type": "linear",
+                "range": {"scheme": {"signal": "palette"}},
+                "domain": {"data": 'table', "field": "dailyUsage"},
+                "reverse": {"signal": "reverse"},
+                "zero": false, "nice": true
               }
             ],
 
             "axes": [
-              { "orient": "bottom", "scale": "xscale" },
-              { "orient": "left", "scale": "yscale" }
+              {"orient": "left", "scale": "y", "domain": false, "title": "Day", "format": "%b"},
+              {"orient": "bottom", "scale": "x", "domain": false, "title": "Hour"}
+            ],
+
+            "legends": [
+              {
+                "fill": "color",
+                "type": "gradient",
+                "title": "Consumption (kW)",
+                "titleFontSize": 12,
+                "titlePadding": 4,
+                "gradientLength": {"signal": "300"}
+              }
             ],
 
             "marks": [
               {
                 "type": "rect",
-                "from": {"data":"table"},
+                "from": {"data": "table"},
                 "encode": {
                   "enter": {
-                    "x": {"scale": "xscale", "field": "category"},
-                    "width": {"scale": "xscale", "band": 1},
-                    "y": {"scale": "yscale", "field": "amount"},
-                    "y2": {"scale": "yscale", "value": 0}
+                    "y": {"scale": "y", "field": "day"},
+                    "x": {"scale": "x", "field": "hour"},
+                    "width": {"value": 20},
+                    "height": {"scale": "x", "band": 0.2},
+                    "tooltip": {"signal": "timeFormat(datum.date, '%b %d %I:00 %p') + ': ' + datum.dailyUsage + ' kW'"}
                   },
                   "update": {
-                    "fill": {"value": "steelblue"}
-                  },
-                  "hover": {
-                    "fill": {"value": "red"}
-                  }
-                }
-              },
-              {
-                "type": "text",
-                "encode": {
-                  "enter": {
-                    "align": {"value": "center"},
-                    "baseline": {"value": "bottom"},
-                    "fill": {"value": "#333"}
-                  },
-                  "update": {
-                    "x": {"scale": "xscale", "signal": "tooltip.category", "band": 0.5},
-                    "y": {"scale": "yscale", "signal": "tooltip.amount", "offset": -2},
-                    "text": {"signal": "tooltip.amount"},
-                    "fillOpacity": [
-                      {"test": "datum === tooltip", "value": 0},
-                      {"value": 1}
-                    ]
+                    "fill": {"scale": "color", "field": "dailyUsage"}
                   }
                 }
               }
@@ -776,8 +793,7 @@
         };
 
         const heatChart = new google.visualization.VegaChart(document.getElementById('heatChartDiv'));
-        heatChart.draw(dataTable, options);
-
+        heatChart.draw(dataTable, heatOptions);
       }
       loadCharts();
     </script>
