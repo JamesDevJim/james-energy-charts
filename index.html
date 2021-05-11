@@ -367,6 +367,7 @@
         const csv = await files[0].text();
         //console.log('csv', csv);       
         CSV_JSON = CSV2JSON(csv);
+        setLoading(true);
         //console.log('CSVdata', CSV_JSON);
         loadCharts();
       }
@@ -631,7 +632,10 @@
                 'chartArea': {'width': '90%',
                               'height': '20%'
               },
-                'hAxis': {'baselineColor': 'none'}
+                'hAxis': {'baselineColor': 'none',
+                  'format': "MMM, yy"
+              
+                }
               },
               // Display a single series that shows the closing value of the stock.
               // Thus, this view has two columns: the date (axis) and the stock value (line series).
@@ -643,7 +647,7 @@
             }
           },
           // Initial range: 2012-02-09 to 2012-03-20.
-          'state': {'range': {'start': new Date(2020, 1, 1), 'end': new Date(2020, 12, 30)}} //TODO: specify this as the data set range
+          //'state': {'range': {'start': new Date(2020, 1, 1), 'end': new Date(2020, 12, 30)}} //TODO: specify this as the data set range
         });
 
         //Consumption Chart building w/data
@@ -671,7 +675,7 @@
                 }
             },
               hAxis: {
-                format: "MMM d, y"
+                format: "MMM d"
               },
             legend: {
                 position: 'none'
@@ -702,7 +706,7 @@
                 }
             },
               hAxis: {
-                format: "MMM d, y"
+                format: "MMM d"
               },
             legend: {
                 position: 'none'
