@@ -234,7 +234,7 @@
         const scatterWeekRows = [];
         const scatterWorkRows =[];
         const calendarRows = [];
-        const weekendUsage = [];
+
         const summedBarRows = [
           [0, 0],
           [1, 0],
@@ -343,8 +343,8 @@
           }
 
           // create consumption and demand line charts data
-          lineRows.push([momDate.toDate(), usage, demand]);
-          
+          lineRows.push([momDate.toDate(), usage, demand]);        
+
           // create scatter charts data
           scatterRows.push([temp, usage]); //All hours
           
@@ -487,9 +487,9 @@
         var lineData = new google.visualization.DataTable();
         lineData.addColumn('date', 'Date');
         lineData.addColumn("number", "Usage");
-        lineData.addColumn("number", "Demand");        
-        lineData.addRows(lineRows);          
-              
+        lineData.addColumn("number", "Demand");            
+        lineData.addRows(lineRows);              
+
         var chart = new google.visualization.ChartWrapper({
         chartType: 'LineChart',
         containerId: 'chart_consumption',
@@ -571,7 +571,7 @@
         var scatterData = new google.visualization.DataTable();
         scatterData.addColumn("number", "Temp");
         scatterData.addColumn("number", "All Usage");     
-        scatterData.addRows(scatterRows);
+        scatterData.addRows(scatterRows);   
         
         var scatterWorkData = new google.visualization.DataTable();
         scatterWorkData.addColumn("number", "Temp");
