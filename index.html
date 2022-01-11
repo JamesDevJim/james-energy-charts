@@ -3,6 +3,11 @@
   <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.0/dist/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        
+    <!-- Load plotly.js into the DOM -->
+    <script src='https://cdn.plot.ly/plotly-2.8.3.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+    
     <script
       type="text/javascript"
       src="https://www.gstatic.com/charts/loader.js"
@@ -25,6 +30,14 @@
 
     <div id="drop-area">Drop csv file here</div>
     <br />
+    
+    <!--display new Ploty-->    
+     <div style="display: flex;">
+      <div id="plotlyDiv"></div>
+    </div>      
+    
+    
+    
     <!--display timeseries consumption (kWh) and demand (kW) data w/ a filter range slider-->    
     <div  id="chartRangeFilter_dashboard_div">
       <div  id="chart_consumption"></div>   
@@ -563,5 +576,64 @@
       }
       loadCharts();
     </script>
+    
+    
+    <!--Start of Plotly -->
+    <script>
+      d3.csv("https://media.githubusercontent.com/media/JamesDevJim/james-energy-charts/ffa9044f52f253803534ee079bb8a10109316f88/FullSample.csv", function(err, rows){
+
+      function unpack(rows, key) {
+      return rows.map(function(row) { return row[key]; });
+      }
+
+      var trace1 = {
+      type: "scatter",
+      mode: "lines",
+      name: 'AAPL High',
+      x: unpack(rows, 'Start Date Time'),
+      y: unpack(rows, 'Usage'),
+      line: {color: '#17BECF'}
+      }
+
+      var data = [trace1];
+
+      //configuration variable. Options: https://plotly.com/javascript/configuration-options/
+      var layout = {
+      responsive: true,
+      title: 'Time Series with Rangeslider',
+      
+      xaxis: {
+        autorange: true,
+        range: ['2019-02-17 22:23:00', '2021-02-16 22:23:00'],
+        rangeselector: {buttons: [
+            {
+              count: 1,
+              label: '1m',
+              step: 'month',
+              stepmode: 'backward'
+            },
+            {
+              count: 6,
+              label: '6m',
+              step: 'month',
+              stepmode: 'backward'
+            },
+            {step: 'all'}
+          ]},
+        rangeslider: {range: ['2019-02-17', '2021-02-16']},
+        type: 'scatter'
+      },
+      yaxis: {
+        autorange: true,
+        range: [0, 200],
+        type: 'linear'
+      }
+      };
+
+      Plotly.newPlot('plotlyDiv', data, layout, {displaylogo: false},{responsive: true});
+      })
+    </script> 
+
+
   </body>
 </html>

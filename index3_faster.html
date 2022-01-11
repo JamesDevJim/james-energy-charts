@@ -20,7 +20,7 @@
       type: "scatter",
       mode: "lines",
       name: 'AAPL High',
-      x: unpack(rows, 'Start Date'),
+      x: unpack(rows, 'Start Date Time'),
       y: unpack(rows, 'Usage'),
       line: {color: '#17BECF'}
       }
@@ -40,7 +40,7 @@
       title: 'Time Series with Rangeslider',
       xaxis: {
         autorange: true,
-        range: ['2020-02-17', '2021-02-16'],
+        range: ['2019-02-17 22:23:00', '2021-02-16 22:23:00'],
         rangeselector: {buttons: [
             {
               count: 1,
@@ -56,18 +56,19 @@
             },
             {step: 'all'}
           ]},
-        rangeslider: {range: ['2020-02-17', '2021-02-16']},
-        type: 'date'
+        rangeslider: {range: ['2019-02-17', '2021-02-16']},
+        type: 'scatter'
       },
       yaxis: {
         autorange: true,
-        range: [86.8700008333, 138.870004167],
+        range: [0, 200],
         type: 'linear'
       }
       };
 
-      Plotly.newPlot('myDiv', data, layout);
+      Plotly.newPlot('myDiv', data, layout, {displaylogo: false},{responsive: true});
       })
     </script>
   </body>
 </html>
+
