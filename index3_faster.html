@@ -16,6 +16,32 @@
       return rows.map(function(row) { return row[key]; });
       }
 
+      console.log('rows',rows);
+/*             [
+          {
+              "Start Date Time": "4/5/2020 0:00",
+              "End Date Time": "4/5/2020 0:15",
+              "Usage": "34.5",
+              "Avg. Temperature": "55",
+              "Peak Demand": "138"
+          },
+          {
+              "Start Date Time": "4/5/2020 0:15",
+              "End Date Time": "4/5/2020 0:30",
+              "Usage": "35.52",
+              "Avg. Temperature": "55",
+              "Peak Demand": "142.08"
+          }] */
+
+
+
+      console.log('unpacked start',unpack(rows, 'Start Date Time'));      
+          /*       [
+              "4/5/2020 0:00",
+              "4/5/2020 0:15",
+              "4/5/2020 0:30",
+              "4/5/2020 0:45",
+              "4/5/2020 1:00"] */
       var trace1 = {
       type: "scatter",
       mode: "lines",
