@@ -895,6 +895,112 @@
         var barChart = new google.visualization.ComboChart(document.getElementById("chart_hourlyWeekend"));
         barChart.draw(barData, barOptions);
 
+
+        //BUILD HEATMAP CHART
+        const dataTable = new google.visualization.DataTable();
+        dataTable.addColumn({type: 'date', 'id': 'date'});//Importing data via "With datatable" using my own data https://developers.google.com/chart/interactive/docs/gallery/vegachart
+        dataTable.addColumn({type: 'number', 'id': 'dailyUsage'});        
+        dataTable.addRows(hourlyRows);
+        //console.log(hourlyRows);
+
+        const heatOptions = {
+          "vega": {
+            "$schema": "https://vega.github.io/schema/vega/v5.json",
+            "description": "A heatmap showing average daily temperatures in Seattle for each hour of the day.",
+            "width": 650,
+            "height": 1000,
+            "padding": 140,
+
+            "title": {
+              "text": "Energy",
+              "anchor": "middle",
+              "fontSize": 16,
+              "frame": "group",
+              "offset": 6
+            },
+
+            "signals": [
+              {"name": "palette", "value": "Plasma"}, //Can change gradiant. Look at list on this example: https://vega.github.io/vega/examples/heatmap/
+              {"name": "reverse", "value": false, "bind": {"input": "checkbox"}}
+            ],
+
+            'data': [{'name': 'table', 
+                      'source': 'datatable',
+                      "transform": [
+                        {"type": "formula", "as": "hour", "expr": "hours(datum.date)"},
+                        { "type": "formula", "as": "day",
+                          "expr": "datetime(year(datum.date), month(datum.date), date(datum.date))"}
+                      ]
+                    }],
+
+            
+            "scales": [
+              {
+                "name": "y",
+                "type": "time",
+                'domain': {'data': 'table', 'field': 'day'},
+                "range": "height",
+                "reverse": true
+              },
+              {
+                "name": "x",
+                "type": "band",
+                "domain": [
+                  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23  
+                ],
+                "range": "width"
+              },
+              {
+                "name": "color",
+                "type": "linear",
+                "range": {"scheme": {"signal": "palette"}},
+                "domain": {"data": 'table', "field": "dailyUsage"},
+                "reverse": {"signal": "reverse"},
+                "zero": false, "nice": true
+              }
+            ],
+
+            "axes": [
+              {"orient": "left", "scale": "y", "domain": false, "title": "Day", "format": "%b"},
+              {"orient": "bottom", "scale": "x", "domain": false, "title": "Hour"}
+            ],
+
+            "legends": [
+              {
+                "fill": "color",
+                "type": "gradient",
+                "title": "Consumption (kW)",
+                "titleFontSize": 12,
+                "titlePadding": 4,
+                "gradientLength": {"signal": "400"}
+              }
+            ],
+
+            "marks": [
+              {
+                "type": "rect",
+                "from": {"data": "table"},
+                "encode": {
+                  "enter": {
+                    "y": {"scale": "y", "field": "day"},
+                    "x": {"scale": "x", "field": "hour"},
+                    "width": {"value": 40},
+                    "height": {"scale": "x", "band": 0.3},
+                    "tooltip": {"signal": "timeFormat(datum.date, '%b %d %I:00 %p') + ': ' + datum.dailyUsage + ' kW'"}
+                  },
+                  "update": {
+                    "fill": {"scale": "color", "field": "dailyUsage"}
+                  }
+                }
+              }
+            ]
+          }
+        };
+
+        const heatChart = new google.visualization.VegaChart(document.getElementById('heatChartDiv'));
+        heatChart.draw(dataTable, heatOptions);
+
+
       }
     </script>
     
